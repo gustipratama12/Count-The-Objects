@@ -18,12 +18,12 @@
     left: 50%;
     top: 70%;
     transform: translate(-50%, -50%);
-    transition: 0.1s;
+    pointer-events: none;
   }
 
   .number {
     position: absolute;
-    font-size: 50px;
+    font-size: 60px;
     font-weight: bold;
     cursor: pointer;
     transition: all 1s linear;
@@ -33,9 +33,18 @@
     position: fixed;
     top: 10px;
     left: 10px;
-    font-size: 24px;
+    font-size: 26px;
+    font-weight: bold;
   }
 
+  #warning {
+    position: fixed;
+    top: 50px;
+    left: 10px;
+    font-size: 22px;
+    color: red;
+    font-weight: bold;
+  }
 </style>
 
 </head>
@@ -43,6 +52,7 @@
 
 <div id="animal">🐸</div>
 <div id="info"></div>
+<div id="warning"></div>
 
 <script>
 let currentNumber = 1;
@@ -60,7 +70,19 @@ document.addEventListener("mousemove", (e) => {
   animal.style.top = e.clientY + "px";
 });
 
-// Generate moving numbers
+// 🎲 Gerakan angka lebih santai
+function moveNumberRandomly(num) {
+  function move() {
+    num.style.left = Math.random() * (window.innerWidth - 60) + "px";
+    num.style.top = Math.random() * (window.innerHeight - 60) + "px";
+
+    let nextMove = Math.random() * 2000 + 3000; // 3-5 detik
+    setTimeout(move, nextMove);
+  }
+  move();
+}
+
+// 🔢 Generate angka
 function createNumbers() {
   document.querySelectorAll(".number").forEach(n => n.remove());
 
@@ -72,17 +94,7 @@ function createNumbers() {
     num.style.left = Math.random() * window.innerWidth + "px";
     num.style.top = Math.random() * window.innerHeight + "px";
 
-    // random movement
-function moveNumberRandomly(num) {
-  function move() {
-    num.style.left = Math.random() * (window.innerWidth - 50) + "px";
-    num.style.top = Math.random() * (window.innerHeight - 50) + "px";
-
-    let nextMove = Math.random() * 2000 + 3000; // 3 - 5 detik
-    setTimeout(move, nextMove);
-  }
-  move();
-}
+    moveNumberRandomly(num);
 
     num.onclick = () => checkAnswer(i);
 
@@ -90,13 +102,26 @@ function moveNumberRandomly(num) {
   }
 }
 
+// 🔄 Reset posisi angka (setelah klik)
+function reshuffleNumbers() {
+  document.querySelectorAll(".number").forEach(num => {
+    num.style.left = Math.random() * (window.innerWidth - 60) + "px";
+    num.style.top = Math.random() * (window.innerHeight - 60) + "px";
+  });
+}
+
+// 🎯 Update UI
 function updateUI() {
   document.getElementById("animal").innerText = animals[currentNumber - 1];
   document.getElementById("info").innerText =
-    "Find number: " + currentNumber + " | Correct: " + correctCount + "/3";
+    "Find: " + currentNumber + " | Progress: " + correctCount + "/3";
 }
 
+// 🎮 Logic klik
 function checkAnswer(clicked) {
+
+  document.getElementById("warning").innerText = "";
+
   if (clicked === currentNumber) {
     correctCount++;
 
@@ -109,11 +134,20 @@ function checkAnswer(clicked) {
         return;
       }
     }
+
+  } else {
+    // ❌ SALAH → reset progress
+    correctCount = 0;
+
+    document.getElementById("warning").innerText =
+      "⚠️ Wrong! Progress reset to 0!";
   }
 
+  reshuffleNumbers();
   updateUI();
 }
 
+// 🏁 End game
 function endGame() {
   document.body.innerHTML = `
     <h1 style="text-align:center; margin-top:100px;">
@@ -127,6 +161,7 @@ function endGame() {
   `;
 }
 
+// init
 createNumbers();
 updateUI();
 </script>
