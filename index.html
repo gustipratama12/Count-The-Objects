@@ -2,129 +2,133 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Count the Objects Game</title>
+<title>Animal Number Game</title>
 
 <style>
   body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f0f8ff;
+    margin: 0;
+    overflow: hidden;
+    background: #e0f7fa;
+    font-family: Arial;
   }
 
-  h1 {
-    color: #333;
+  #animal {
+    position: absolute;
+    font-size: 80px;
+    left: 50%;
+    top: 70%;
+    transform: translate(-50%, -50%);
+    transition: 0.1s;
   }
 
-  #objects {
-    font-size: 40px;
-    margin: 20px;
-  }
-
-  button {
-    padding: 12px 20px;
-    margin: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    border-radius: 10px;
-  }
-
-  .correct {
-    background-color: #4CAF50;
-    color: white;
-  }
-
-  .wrong {
-    background-color: #f44336;
-    color: white;
-  }
-
-  #result {
-    font-size: 20px;
-    margin-top: 15px;
+  .number {
+    position: absolute;
+    font-size: 50px;
     font-weight: bold;
+    cursor: pointer;
+    transition: all 1s linear;
   }
+
+  #info {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    font-size: 24px;
+  }
+
 </style>
 
 </head>
 <body>
 
-<h1>🔢 Count the Objects</h1>
-
-<p>How many objects do you see?</p>
-
-<div id="objects"></div>
-
-<div id="choices"></div>
-
-<p id="result"></p>
+<div id="animal">🐸</div>
+<div id="info"></div>
 
 <script>
 let currentNumber = 1;
+let correctCount = 0;
 
-const emojis = ["🍎","🍌","🐶","🐱","🍇","🍊","⭐","⚽","🚗","🐸"];
+const animals = [
+  "🐸","🐘","🐶","🐱","🐵",
+  "🐼","🦁","🐰","🐯","🐻"
+];
 
-function generateObjects(num) {
-  let obj = "";
-  for (let i = 0; i < num; i++) {
-    obj += emojis[Math.floor(Math.random() * emojis.length)] + " ";
+// 🖱️ Animal follow mouse
+document.addEventListener("mousemove", (e) => {
+  let animal = document.getElementById("animal");
+  animal.style.left = e.clientX + "px";
+  animal.style.top = e.clientY + "px";
+});
+
+// Generate moving numbers
+function createNumbers() {
+  document.querySelectorAll(".number").forEach(n => n.remove());
+
+  for (let i = 1; i <= 10; i++) {
+    let num = document.createElement("div");
+    num.className = "number";
+    num.innerText = i;
+
+    num.style.left = Math.random() * window.innerWidth + "px";
+    num.style.top = Math.random() * window.innerHeight + "px";
+
+    // random movement
+function moveNumberRandomly(num) {
+  function move() {
+    num.style.left = Math.random() * (window.innerWidth - 50) + "px";
+    num.style.top = Math.random() * (window.innerHeight - 50) + "px";
+
+    let nextMove = Math.random() * 2000 + 3000; // 3 - 5 detik
+    setTimeout(move, nextMove);
   }
-  return obj;
+  move();
 }
 
-function generateChoices(correct) {
-  let choices = [correct];
+    num.onclick = () => checkAnswer(i);
 
-  while (choices.length < 3) {
-    let random = Math.floor(Math.random() * 15) + 1;
-    if (!choices.includes(random)) {
-      choices.push(random);
+    document.body.appendChild(num);
+  }
+}
+
+function updateUI() {
+  document.getElementById("animal").innerText = animals[currentNumber - 1];
+  document.getElementById("info").innerText =
+    "Find number: " + currentNumber + " | Correct: " + correctCount + "/3";
+}
+
+function checkAnswer(clicked) {
+  if (clicked === currentNumber) {
+    correctCount++;
+
+    if (correctCount >= 3) {
+      currentNumber++;
+      correctCount = 0;
+
+      if (currentNumber > 10) {
+        endGame();
+        return;
+      }
     }
   }
 
-  return choices.sort(() => Math.random() - 0.5);
+  updateUI();
 }
 
-function loadQuestion() {
-  document.getElementById("result").innerText = "";
-
-  if (currentNumber > 15) {
-    document.body.innerHTML = `
-      <h1>🎉 Great Job!</h1>
-      <p>You finished all levels!</p>
-      <button onclick="location.reload()">Play Again</button>
-    `;
-    return;
-  }
-
-  document.getElementById("objects").innerText = generateObjects(currentNumber);
-
-  let choices = generateChoices(currentNumber);
-  let buttons = "";
-
-  choices.forEach(choice => {
-    buttons += `<button onclick="checkAnswer(${choice})">${choice}</button>`;
-  });
-
-  document.getElementById("choices").innerHTML = buttons;
+function endGame() {
+  document.body.innerHTML = `
+    <h1 style="text-align:center; margin-top:100px;">
+      🎉 Great Job!
+    </h1>
+    <div style="text-align:center;">
+      <button onclick="location.reload()" style="font-size:20px; padding:10px;">
+        Play Again
+      </button>
+    </div>
+  `;
 }
 
-function checkAnswer(answer) {
-  if (answer === currentNumber) {
-    document.getElementById("result").innerText = "✅ Correct!";
-    document.getElementById("result").style.color = "green";
-
-    setTimeout(() => {
-      currentNumber++;
-      loadQuestion();
-    }, 1000);
-
-  } else {
-    document.getElementById("result").innerText = "❌ Try again!";
-    document.getElementById("result").style.color = "red";
-  }
-}
-
-loadQuestion();
+createNumbers();
+updateUI();
 </script>
 
 </body>
